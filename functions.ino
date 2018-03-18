@@ -1,10 +1,3 @@
-//void printNumber(unsigned int number, byte numd) // print fixed-width uint number
-//{
-//  byte d=digits(number);
-//  for(byte i=d; i<numd; ++i) lcd.print((char)' '); // padding
-//  lcd.print(number);
-//}
-
 byte digits(unsigned int iNum) // calculate the number of digits
 {
   byte bDigits=0;
@@ -39,48 +32,82 @@ void readKeyPad() {
       lcd.setCursor(0, 1);
       lcd.print("                ");
       lcd.setCursor(0, 1);
-      if(!runInProgress) {
-        if(DFRkeypad::KeyName(key) == "Up") {
+      if(!recordData && !testing) {
+        if(DFRkeypad::KeyName(key) == "Up" || DFRkeypad::KeyName(key) == "Right") {
           currentOption = currentOption + 1;
-          if (currentOption > 1) {
+          if (currentOption >= sizeof(menuOptions) / sizeof(menuOptions[0])) {
             currentOption = 0;
           }
           lcd.print(menuOptions[currentOption]);
-        }else if (DFRkeypad::KeyName(key) == "Down") {
+        }else if (DFRkeypad::KeyName(key) == "Down" || DFRkeypad::KeyName(key) == "Left") {
           currentOption = currentOption - 1;
           if (currentOption < 0) {
-            currentOption = 1;
+            currentOption = sizeof(menuOptions) / sizeof(menuOptions[0]) - 1;
           }
           lcd.print(menuOptions[currentOption]);
         }else if (DFRkeypad::KeyName(key) == "Select") {
            if (menuOptions[currentOption] == "INFO") {
-            showInfo();
+              showInfo();
            }else if(menuOptions[currentOption] == "START") {
-            runInProgress = true;
-            sensorCounter = 0;
-            startMillis = millis();
-            createLoggingFile();
+              startTest();
+           } else if(menuOptions[currentOption] == "TEST") {
+              testDevice();
            }
         }
       }else {
-        runInProgress = false;
-        myFile.close();
+        Serial.println("Menu State");
+        lcd.setCursor(0, 0);
+        lcd.print("Ratalyzer (Menu)");
+        testing = false;
+        recordData = false;
       }
     }
   }
 }
 
-void createLoggingFile() {
-  myFile = SD.open("rat.txt", FILE_WRITE);
+void testDevice() {
+  count = 0;
+  testing = true;
+  lcd.setCursor(0, 0);
+  lcd.print("Ratalyzer (Test)");
+}
+
+void startTest() {
+  count = 0;
+  recordData = true;
+
+  RtcDateTime now = Rtc.GetDateTime();
+  currentFileName = getDate(now, 1);
+  
+  Serial.println(currentFileName);
+  
+  lcd.setCursor(0, 0);
+  lcd.print("                ");
+  lcd.setCursor(0, 0);
+  lcd.print(getDate(now));
+  
+  currentFileName = currentFileName + ".csv";
+  char fileName[sizeof(currentFileName)];
+  currentFileName.toCharArray(fileName, sizeof(fileName));
+
+  myFile = SD.open(fileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
   if (myFile) {
-    myFile.println("testing 1, 2, 3.");
+    myFile.println(getDate(now) + ",");
     myFile.close();
   } else {
     // if the file didn't open, print an error:
-    Serial.println("error opening test.txt");
+    clearLine(0);
+    clearLine(1);
+    lcd.setCursor(0, 0);
+    lcd.print("Error: FileWrite");
   }
+}
+
+void clearLine(int lineNumber){
+  lcd.setCursor(0, lineNumber);
+  lcd.print("                ");
 }
 
 void showInfo() {
@@ -88,10 +115,78 @@ void showInfo() {
   lcd.print("                ");
   lcd.setCursor(0, 1);
   lcd.print(softwareVersion);
-  delay(5000);
+  delay(1000);
   lcd.setCursor(0, 1);
   lcd.print("                ");
   lcd.setCursor(0, 1);
   lcd.print("INFO");
+}
+
+void collectData() {
+  if (recordData){
+    printCount();
+  }
+}
+
+void test() {
+  if(testing) {
+    printCount();
+  }
+}
+
+void printCount() {
+  byte sensorResult = hallEffectSensor0.read();
+    if(!sensorResult && lastByte){
+    count++;
+    lastReadingMillis = millis();
+    lcd.setCursor(0, 1);
+    lcd.print(count);
+    
+      if (!checkKeyPad){
+        lcd.print("-MD");
+      }
+
+      if(recordData){
+        addData();
+      }
+    }
+    lastByte = sensorResult;
+
+    if(millis() - lastReadingMillis > 5000) {
+      if (clearPrint) {
+        lcd.setCursor(0, 1);
+        lcd.print(count);
+        lcd.print("   ");
+      }
+      clearPrint = false;
+      checkKeyPad = true;
+    } else {
+      lcd.setCursor(0, 1);
+      lcd.print(count);
+      lcd.print("-MD");
+      clearPrint = true;
+      checkKeyPad = false;
+    }
+}
+
+void addData() {
+  RtcDateTime now = Rtc.GetDateTime();
+
+  char fileName[sizeof(currentFileName)];
+  currentFileName.toCharArray(fileName, sizeof(fileName));
+  
+  myFile = SD.open(fileName, FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    myFile.println(getDate(now) + ",");
+    myFile.close();
+  } else {
+    // if the file didn't open, print an error:
+    clearLine(0);
+    clearLine(1);
+    lcd.setCursor(0, 0);
+    lcd.print("Error: FileWrite");
+  }
 }
 

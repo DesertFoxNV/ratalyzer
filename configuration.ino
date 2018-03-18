@@ -25,15 +25,25 @@ void displayConfig() {
   lcd.begin(16, 2);                               // set up the LCD's number of columns and rows (16x2)
   lcd.createChar(symPLUSMINUS, char_plusminus);   // create +/- character
 
-  pinMode(LCD_BL, OUTPUT);                        // pin LCD_BL is LCD backlight brightness (PWM)
-  analogWrite(LCD_BL, 255);                       // set the PWM brightness to maximum
+  pinMode(lcdBacklight, OUTPUT);                        // pin LCD_BL is LCD backlight brightness (PWM)
+  analogWrite(lcdBacklight, 255);                       // set the PWM brightness to maximum
   lcd.setCursor(0, 0);
-  lcd.print("Ratalyzer");
+  lcd.print("Ratalyzer (Menu)");
+  lcd.setCursor(0, 1);
+  lcd.print("START");
 
-  DFRkeypad::FastADC(true);                       // increase ADC sample frequency
+  DFRkeypad::FastADC(true);                        // increase ADC sample frequency
   DFRkeypad::iDEFAULT_THRESHOLD=140;              // maximum threshold acceptable so bounds in DFRkeypad::iARV_VALUES are not overlapping
   clearStat();                                    // clear statistics
   LastTime=millis();                              // remember tick counter
+}
+
+void clockConfig() {
+  pinMode(18, OUTPUT);
+  pinMode(19, OUTPUT);
+  digitalWrite(18, LOW);
+  digitalWrite(19, HIGH);
+  Rtc.Begin();
 }
 
 
