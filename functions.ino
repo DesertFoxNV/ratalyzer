@@ -77,7 +77,8 @@ void startTest() {
   recordData = true;
 
   RtcDateTime now = Rtc.GetDateTime();
-  currentFileName = getDate(now, 1);
+  currentFileName = "data.csv";
+//  currentFileName = getDate(now, 1);
   
   Serial.println(currentFileName);
   
@@ -86,11 +87,12 @@ void startTest() {
   lcd.setCursor(0, 0);
   lcd.print(getDate(now));
   
-  currentFileName = currentFileName + ".csv";
-  char fileName[sizeof(currentFileName)];
-  currentFileName.toCharArray(fileName, sizeof(fileName));
+//  currentFileName = currentFileName;
+//  char fileName[currentFileName.length() + 1];
+//  currentFileName.toCharArray(fileName, currentFileName.length() + 1);
+//  Serial.println(fileName);
 
-  myFile = SD.open(fileName, FILE_WRITE);
+  myFile = SD.open("data.csv", FILE_WRITE);
 
   // if the file opened okay, write to it:
   if (myFile) {
@@ -172,10 +174,7 @@ void printCount() {
 void addData() {
   RtcDateTime now = Rtc.GetDateTime();
 
-  char fileName[sizeof(currentFileName)];
-  currentFileName.toCharArray(fileName, sizeof(fileName));
-  
-  myFile = SD.open(fileName, FILE_WRITE);
+  myFile = SD.open("data.csv", FILE_WRITE);
 
   // if the file opened okay, write to it:
   if (myFile) {

@@ -36,7 +36,7 @@ RtcDS3231<TwoWire> Rtc(Wire);
 HallEffectSensor hallEffectSensor0(37, 36, 35); 
 
 void setup() {
-  serialConfig();
+  //serialConfig();
   sdCardConfig();
   displayConfig();
   clockConfig();

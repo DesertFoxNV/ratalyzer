@@ -16,6 +16,8 @@ void sdCardConfig() {
    
   if (!SD.begin(chipSelect)) {
     Serial.println("initialization failed!");
+    lcd.setCursor(0, 0);
+    lcd.print("Error: SDCard");
     return;
   }
   Serial.println("initialization done.");

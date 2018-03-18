@@ -13,10 +13,10 @@ String getDate(const RtcDateTime& dt, byte format = 0) {
             dt.Hour(),
             dt.Minute(),
             dt.Second() );
-  } else {
+  } else { // For getting file name
     snprintf_P(datestring, 
             countof(datestring),
-            PSTR("%02u-%02u-%04u %02u-%02u-%02u"),
+            PSTR("%02u-%02u-%04u_%02u-%02u-%02u"),
             dt.Month(),
             dt.Day(),
             dt.Year(),
@@ -27,4 +27,3 @@ String getDate(const RtcDateTime& dt, byte format = 0) {
 
   return datestring;
 }
-
