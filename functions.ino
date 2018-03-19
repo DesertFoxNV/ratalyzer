@@ -73,6 +73,7 @@ void testDevice() {
 }
 
 void startTest() {
+  checkKeyPad = false;
   count = 0;
   recordData = true;
 
@@ -96,7 +97,12 @@ void startTest() {
 
   // if the file opened okay, write to it:
   if (myFile) {
-    myFile.println(getDate(now) + ",");
+    myFile.println("New run,");
+    myFile.print(getDate(now) + ",");
+    myFile.print(millis());
+    myFile.println(",");
+    myFile.print("startDate,");
+    myFile.println("startMillis,");
     myFile.close();
   } else {
     // if the file didn't open, print an error:
@@ -144,7 +150,7 @@ void printCount() {
     lcd.setCursor(0, 1);
     lcd.print(count);
     
-      if (!checkKeyPad){
+      if (!checkKeyPad || recordData){
         lcd.print("-MD");
       }
 
@@ -158,10 +164,11 @@ void printCount() {
       if (clearPrint) {
         lcd.setCursor(0, 1);
         lcd.print(count);
-        lcd.print("   ");
       }
       clearPrint = false;
-      checkKeyPad = true;
+      if (!recordData) {
+        checkKeyPad = true;
+      }
     } else {
       lcd.setCursor(0, 1);
       lcd.print(count);
@@ -178,7 +185,9 @@ void addData() {
 
   // if the file opened okay, write to it:
   if (myFile) {
-    myFile.println(getDate(now) + ",");
+    myFile.print(getDate(now) + ",");
+    myFile.print(millis());
+    myFile.println(",");
     myFile.close();
   } else {
     // if the file didn't open, print an error:
